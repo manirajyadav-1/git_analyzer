@@ -87,7 +87,6 @@ const DependencyGraph = ({ analysisId }) => {
 
   useEffect(() => {
     fetchData();
-    // Cleanup cytoscape instance when component unmounts
     return () => {
       if (graphContainerRef.current) {
         graphContainerRef.current.innerHTML = "";
