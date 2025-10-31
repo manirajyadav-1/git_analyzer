@@ -53,8 +53,7 @@ export default function AnalysisDashboard() {
     Other: "#9C27B0",
   };
 
-  const isValidGitHubUrl = (url) =>
-    /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(?:\.git)?$/.test(url);
+  const isValidGitHubUrl = (url) => /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(?:\.git)?$/.test(url);
 
   const fetchTotalCommits = async () => {
     setIsLoading(true);
