@@ -166,9 +166,3 @@ git-analyzer/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [React](https://reactjs.org/)
-- [pgvector](https://github.com/pgvector/pgvector)
-- [Ollama](https://ollama.ai/)
