@@ -52,8 +52,8 @@ const CodebaseHeatmap = ({ analysisId }) => {
     };
 
     const renderHeatmap = (data) => {
-      const width = 800;
-      const height = 600;
+      const width = 1150;
+      const height = 700;
       const svg = d3.select(heatmapRef.current)
         .attr("width", width)
         .attr("height", height);
@@ -107,9 +107,9 @@ const CodebaseHeatmap = ({ analysisId }) => {
   }, [analysisId]);
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-4">
+    <div className="flex flex-col items-center space-y-5 p-4">
       <h2 className="text-lg font-semibold text-gray-800">Codebase Heatmap</h2>
-      <svg ref={heatmapRef} className="w-full max-w-4xl border border-gray-200 rounded-md shadow-sm" />
+      <svg ref={heatmapRef} className="w-full max-w-6xl border border-gray-200 rounded-md shadow-sm" />
 
       {/* Legend */}
       <div className="flex justify-center gap-6 mt-3 text-sm text-gray-700">
