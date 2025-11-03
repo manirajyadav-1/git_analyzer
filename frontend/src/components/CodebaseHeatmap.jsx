@@ -108,7 +108,7 @@ const CodebaseHeatmap = ({ analysisId }) => {
 
   return (
     <div className="flex flex-col items-center space-y-5 p-4">
-      <h2 className="text-lg font-semibold text-gray-800">Codebase Heatmap</h2>
+      <h2 className="text-2xl font-semibold text-center mb-4 text-gray-800">Codebase Heatmap</h2>
       <svg ref={heatmapRef} className="w-full max-w-6xl border border-gray-200 rounded-md shadow-sm" />
 
       {/* Legend */}

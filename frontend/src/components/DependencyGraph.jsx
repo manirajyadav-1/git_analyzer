@@ -5,7 +5,7 @@ import dagre from "cytoscape-dagre";
 import qtip from "cytoscape-qtip";
 import "qtip2/dist/jquery.qtip.min.css";
 
-// ✅ Register plugins only once
+
 if (!cytoscape.prototype.hasQtip) {
   cytoscape.use(dagre);
   cytoscape.use(qtip);
@@ -21,7 +21,7 @@ const DependencyGraph = ({ analysisId }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = `http://localhost:8080/api/dependency-graph?analysisId=${analysisId}`;
+        const apiUrl = `${import.meta.env.VITE_REACT_APP_API_URL}/api/dependency-graph?analysisId=${analysisId}`;
         const response = await axios.get(apiUrl);
 
         if (!response.data || !response.data.data) {
@@ -99,31 +99,13 @@ const DependencyGraph = ({ analysisId }) => {
       wheelSensitivity: 0.2,
     });
 
-    // ✅ Keep Dependencies node centered on load
+    // Keep dependencies node in center and zoom in
     cy.ready(() => {
-      const rootNode = cy
-        .nodes()
-        .filter((n) => n.data("label") === "Dependencies");
-      if (rootNode && rootNode.length > 0) {
-        cy.center(rootNode);
-        cy.zoom(0.5);
-      } else {
-        cy.center();
-        cy.zoom(0.5);
-      }
+      cy.fit(undefined, 10);
+      cy.zoom(cy.zoom() * 4); 
+      const centerNode = cy.$('node[label = "Dependencies"]');
+      if (centerNode) cy.center(centerNode);
     });
-
-    cy.nodes().forEach((node) => {
-      node.qtip({
-        content: () => `<b>${node.data("label")}</b>`,
-        position: { my: "top center", at: "bottom center" },
-        style: { classes: "qtip-bootstrap" },
-      });
-    });
-
-    cy.userZoomingEnabled(true);
-    cy.userPanningEnabled(true);
-    cy.autolock(false);
   };
 
   const transformData = (data) => {
@@ -144,14 +126,14 @@ const DependencyGraph = ({ analysisId }) => {
 
   return (
     <div className="dependency-graph">
-      <h2 className="text-lg font-semibold mb-4 text-center">
+      <h2 className="text-2xl font-semibold text-center mb-4 text-gray-800">
         Dependency Graph
       </h2>
 
       {hasData ? (
         <div
           ref={containerRef}
-          className="border rounded-lg shadow-md w-full h-[600px] overflow-auto"
+          className="w-full max-w-6xl h-[600px] border border-gray-200 rounded-md shadow-sm"
         ></div>
       ) : noData ? (
         <div className="text-gray-500 text-center mt-6">
