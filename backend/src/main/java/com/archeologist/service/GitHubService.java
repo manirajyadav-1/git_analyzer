@@ -1,13 +1,9 @@
 package com.archeologist.service;
 
 import com.archeologist.entity.CodeAnalysis;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHUser;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHIssue;
-import org.kohsuke.github.GHIssueState;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.kohsuke.github.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +20,9 @@ public class GitHubService {
     
     @Autowired
     private GitHub gitHub;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     
     public Map<String, String> extractRepoInfo(String repoUrl) {
         String[] parts = repoUrl.replace("https://github.com/", "").split("/");
@@ -114,19 +113,42 @@ public class GitHubService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     public Map<String, String> fetchDependencies(String owner, String repo) throws IOException {
+        Map<String, String> dependencies = new HashMap<>();
+
         try {
             GHRepository repository = gitHub.getRepository(owner + "/" + repo);
             GHContent packageJson = repository.getFileContent("package.json");
+
             String content = new String(packageJson.read().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-            
-            // Parse JSON manually or use a JSON library
-            // For simplicity, returning empty map - in production, use Jackson or Gson
-            return new HashMap<>();
+
+            logger.debug("Fetched package.json for {}/{}: {}", owner, repo, content);
+
+            // Parse JSON properly
+            JsonNode root = objectMapper.readTree(content);
+
+            // Merge both dependencies and devDependencies
+            if (root.has("dependencies")) {
+                JsonNode deps = root.get("dependencies");
+                deps.fields().forEachRemaining(entry -> dependencies.put(entry.getKey(), entry.getValue().asText()));
+            }
+
+            if (root.has("devDependencies")) {
+                JsonNode devDeps = root.get("devDependencies");
+                devDeps.fields().forEachRemaining(entry -> dependencies.put(entry.getKey(), entry.getValue().asText()));
+            }
+
+            logger.info("Parsed {} dependencies from {}/{}", dependencies.size(), owner, repo);
+            return dependencies;
+
+        } catch (GHFileNotFoundException e) {
+            logger.warn("package.json not found in {}/{} repository", owner, repo);
+            return dependencies;
         } catch (Exception e) {
-            logger.warn("Could not fetch package.json for {}/{}: {}", owner, repo, e.getMessage());
-            return new HashMap<>();
+            logger.error("Error fetching dependencies for {}/{}: {}", owner, repo, e.getMessage(), e);
+            return dependencies;
         }
     }
+
 }

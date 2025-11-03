@@ -413,27 +413,27 @@ public class AnalysisService {
     /**
      * Creates or updates an analysis entry for a given session and repo.
      */
-    public CodeAnalysis createOrUpdateAnalysis(String sessionId, String repoUrl, Map<String, Object> analysisData) {
-        logger.info("Creating or updating analysis for sessionId={}, repoUrl={}", sessionId, repoUrl);
-
-        try {
-            CodeAnalysis analysis = codeAnalysisRepository
-                    .findBySessionIdAndRepoUrl(sessionId, repoUrl)
-                    .orElseGet(() -> {
-                        logger.debug("No existing analysis found — creating new entry");
-                        return new CodeAnalysis(sessionId, repoUrl, "in-progress");
-                    });
-
-            analysis.setStatus("completed");
-            populateAnalysisFields(analysis, analysisData);
-
-            return saveAnalysis(analysis);
-
-        } catch (Exception e) {
-            logger.error("Error creating/updating analysis for repoUrl={}", repoUrl, e);
-            throw new RuntimeException("Failed to create or update analysis: " + e.getMessage(), e);
-        }
-    }
+//    public CodeAnalysis createOrUpdateAnalysis(String sessionId, String repoUrl, Map<String, Object> analysisData) {
+//        logger.info("Creating or updating analysis for sessionId={}, repoUrl={}", sessionId, repoUrl);
+//
+//        try {
+//            CodeAnalysis analysis = codeAnalysisRepository
+//                    .findBySessionIdAndRepoUrl(sessionId, repoUrl)
+//                    .orElseGet(() -> {
+//                        logger.debug("No existing analysis found — creating new entry");
+//                        return new CodeAnalysis(sessionId, repoUrl, "in-progress");
+//                    });
+//
+//            analysis.setStatus("completed");
+//            populateAnalysisFields(analysis, analysisData);
+//
+//            return saveAnalysis(analysis);
+//
+//        } catch (Exception e) {
+//            logger.error("Error creating/updating analysis for repoUrl={}", repoUrl, e);
+//            throw new RuntimeException("Failed to create or update analysis: " + e.getMessage(), e);
+//        }
+//    }
 
     /**
      * Populates CodeAnalysis fields safely from a generic data map.
@@ -482,16 +482,6 @@ public class AnalysisService {
             return codeAnalysisRepository.findById(analysisId);
         } catch (Exception e) {
             logger.error("Error fetching analysis by ID={}: {}", analysisId, e.getMessage());
-            return Optional.empty();
-        }
-    }
-
-    public Optional<CodeAnalysis> getLatestAnalysisBySessionId(String sessionId) {
-        logger.debug("Fetching latest analysis for sessionId={}", sessionId);
-        try {
-            return codeAnalysisRepository.findLatestBySessionId(sessionId);
-        } catch (Exception e) {
-            logger.error("Error fetching latest analysis for sessionId={}: {}", sessionId, e.getMessage());
             return Optional.empty();
         }
     }

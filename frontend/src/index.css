@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+
+.dependency-graph {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dependency-graph h2 {
+  text-align: center;
+}
+
+#dependencyGraph {
+  width: 100%;
+  height: 600px;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.no-data-message {
+  color: #555;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.loading-message {
+  text-align: center;
+  margin-top: 20px;
+}

@@ -169,7 +169,7 @@ public class AnalysisController {
 
             List<Map<String, Object>> commits = gitHubService.fetchCommits(owner, repo, commitCount);
 
-            // Process commits to match Node.js format
+
             List<Map<String, Object>> processedCommits = commits.stream()
                     .map(commit -> {
                         Map<String, Object> processedCommit = new HashMap<>();

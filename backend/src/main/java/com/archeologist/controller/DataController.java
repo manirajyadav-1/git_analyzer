@@ -157,31 +157,37 @@ public class DataController {
         try {
             Long analysisId = resolveAnalysisId(session, analysisIdParam);
             if (analysisId == null) {
+                logger.warn("No analysisId found for session {}", session.getId());
                 return successWithData(Collections.emptyMap());
             }
 
             Optional<CodeAnalysis> analysisOpt = analysisService.getAnalysisById(analysisId);
             if (analysisOpt.isEmpty() || analysisOpt.get().getDependencies() == null) {
+                logger.warn("No dependency data found for analysisId {}", analysisId);
                 return successWithData(Collections.emptyMap());
             }
 
-            // Deserialize JSON string into Map
+            // Deserialize JSON dependencies safely
             Map<String, Object> dependencies = objectMapper.readValue(
-                    analysisOpt.get().getDependencies(), new TypeReference<>() {});
+                    analysisOpt.get().getDependencies(),
+                    new TypeReference<Map<String, Object>>() {}
+            );
 
+            logger.info("Successfully fetched dependency graph for analysisId {}", analysisId);
             return successWithData(dependencies);
 
         } catch (Exception e) {
+            logger.error("Error fetching dependency graph: {}", e.getMessage(), e);
             return buildErrorResponse("Error fetching dependencies", e);
         }
     }
 
-    @GetMapping("/linked-issues")
-    public ResponseEntity<Map<String, Object>> getLinkedIssues(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching linked issues for session {}", session.getId());
+    @GetMapping("/linked-issues")
+    public ResponseEntity<Map<String, Object>> getLinkedIssues(@RequestParam(name = "analysisId", required = false) Long analysisId) {
+
+        logger.info("Fetching linked issues for id {}", analysisId);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
             if (analysisId == null) {
                 return successWithData(Collections.emptyList());
             }

@@ -1,120 +1,166 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import cytoscape from "cytoscape";
+import dagre from "cytoscape-dagre";
+import qtip from "cytoscape-qtip";
+import "qtip2/dist/jquery.qtip.min.css";
+
+// ✅ Register plugins only once
+if (!cytoscape.prototype.hasQtip) {
+  cytoscape.use(dagre);
+  cytoscape.use(qtip);
+  cytoscape.prototype.hasQtip = true;
+}
 
 const DependencyGraph = ({ analysisId }) => {
+  const containerRef = useRef(null);
   const [hasData, setHasData] = useState(false);
   const [noData, setNoData] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const graphContainerRef = useRef(null);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_API_URL}/api/dependency-graph`, {
-        withCredentials: true,
-        params: { analysisId },
-      });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const apiUrl = `http://localhost:8080/api/dependency-graph?analysisId=${analysisId}`;
+        const response = await axios.get(apiUrl);
 
-      const dependencies = response.data.data || {};
+        if (!response.data || !response.data.data) {
+          setNoData(true);
+          return;
+        }
 
-      if (dependencies && Object.keys(dependencies).length > 0) {
+        const graphData = response.data.data;
+        renderGraph(graphData);
         setHasData(true);
-        setNoData(false);
-        setErrorMessage("");
-        renderGraph(buildGraphElements(dependencies));
-      } else {
-        setHasData(false);
-        setNoData(true);
+      } catch (err) {
+        console.error("Error fetching dependency graph data:", err);
+        setErrorMessage("Failed to load dependency data.");
       }
-    } catch (error) {
-      console.error("Error fetching dependency graph data:", error);
-      setHasData(false);
-      setErrorMessage("Failed to load dependency data.");
-    }
-  };
+    };
 
-  const buildGraphElements = (deps) => {
-    const elements = [];
-    const rootNodeId = "root";
-    elements.push({ data: { id: rootNodeId, label: "Project" } });
+    fetchData();
+  }, [analysisId]);
 
-    for (const [dep, version] of Object.entries(deps)) {
-      const depId = dep;
-      elements.push({ data: { id: depId, label: `${dep}@${version}` } });
-      elements.push({ data: { source: rootNodeId, target: depId } });
-    }
+  const renderGraph = (graphData) => {
+    if (!containerRef.current) return;
 
-    return elements;
-  };
+    containerRef.current.innerHTML = "";
 
-  const renderGraph = (elements) => {
-    cytoscape({
-      container: graphContainerRef.current,
+    const elements = transformData(graphData);
+
+    const cy = cytoscape({
+      container: containerRef.current,
       elements,
       style: [
         {
           selector: "node",
           style: {
+            "background-color": "#007bff",
             label: "data(label)",
             "text-valign": "center",
             "text-halign": "center",
-            "background-color": "#2563eb", // Tailwind blue-600
             color: "#fff",
-            width: 100,
-            height: 100,
-            "text-wrap": "wrap",
-            "text-max-width": 90,
-            "font-size": 10,
-            padding: "10px",
+            "text-outline-width": 2,
+            "text-outline-color": "#007bff",
+            "font-size": 12,
+            width: 200,
+            height: 200,
+            shape: "ellipse",
           },
         },
         {
           selector: "edge",
           style: {
-            "curve-style": "bezier",
+            width: 5,
+            "line-color": "#ccc",
+            "target-arrow-color": "#ccc",
             "target-arrow-shape": "triangle",
-            width: 2,
-            "line-color": "#d1d5db", // Tailwind gray-300
-            "target-arrow-color": "#d1d5db",
+            "curve-style": "bezier",
+          },
+        },
+        {
+          selector: ".root",
+          style: {
+            "background-color": "#28a745",
+            width: 150,
+            height: 150,
+            "font-size": 18,
+            "font-weight": "bold",
           },
         },
       ],
       layout: {
-        name: "breadthfirst",
+        name: "dagre",
+        rankDir: "TB",
+        nodeSep: 150,
+        rankSep: 100,
+        edgeSep: 50,
       },
+      wheelSensitivity: 0.2,
     });
+
+    // ✅ Keep Dependencies node centered on load
+    cy.ready(() => {
+      const rootNode = cy
+        .nodes()
+        .filter((n) => n.data("label") === "Dependencies");
+      if (rootNode && rootNode.length > 0) {
+        cy.center(rootNode);
+        cy.zoom(0.5);
+      } else {
+        cy.center();
+        cy.zoom(0.5);
+      }
+    });
+
+    cy.nodes().forEach((node) => {
+      node.qtip({
+        content: () => `<b>${node.data("label")}</b>`,
+        position: { my: "top center", at: "bottom center" },
+        style: { classes: "qtip-bootstrap" },
+      });
+    });
+
+    cy.userZoomingEnabled(true);
+    cy.userPanningEnabled(true);
+    cy.autolock(false);
   };
 
-  useEffect(() => {
-    fetchData();
-    return () => {
-      if (graphContainerRef.current) {
-        graphContainerRef.current.innerHTML = "";
-      }
-    };
-  }, [analysisId]);
+  const transformData = (data) => {
+    const nodes = [];
+    const edges = [];
+
+    const root = "Dependencies";
+
+    nodes.push({ data: { id: root, label: root } });
+
+    Object.keys(data).forEach((pkg) => {
+      nodes.push({ data: { id: pkg, label: `${pkg} ${data[pkg]}` } });
+      edges.push({ data: { source: root, target: pkg } });
+    });
+
+    return { nodes, edges };
+  };
 
   return (
-    <div className="max-w-4xl mx-auto mt-8 p-4 bg-white shadow rounded-lg">
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
+    <div className="dependency-graph">
+      <h2 className="text-lg font-semibold mb-4 text-center">
         Dependency Graph
       </h2>
 
       {hasData ? (
         <div
-          ref={graphContainerRef}
-          className="w-full h-[600px] border border-gray-200 rounded-md"
-        />
+          ref={containerRef}
+          className="border rounded-lg shadow-md w-full h-[600px] overflow-auto"
+        ></div>
       ) : noData ? (
-        <div className="text-center text-gray-500 italic mt-4">
+        <div className="text-gray-500 text-center mt-6">
           No dependency data available.
         </div>
       ) : errorMessage ? (
-        <div className="text-center text-red-600 italic mt-4">
-          {errorMessage}
-        </div>
+        <div className="text-red-500 text-center mt-6">{errorMessage}</div>
       ) : (
-        <div className="text-center text-gray-500 italic mt-4">
+        <div className="text-gray-500 text-center mt-6">
           Loading dependency graph...
         </div>
       )}
