@@ -411,31 +411,6 @@ public class AnalysisService {
     private EntityManager entityManager;
 
     /**
-     * Creates or updates an analysis entry for a given session and repo.
-     */
-//    public CodeAnalysis createOrUpdateAnalysis(String sessionId, String repoUrl, Map<String, Object> analysisData) {
-//        logger.info("Creating or updating analysis for sessionId={}, repoUrl={}", sessionId, repoUrl);
-//
-//        try {
-//            CodeAnalysis analysis = codeAnalysisRepository
-//                    .findBySessionIdAndRepoUrl(sessionId, repoUrl)
-//                    .orElseGet(() -> {
-//                        logger.debug("No existing analysis found — creating new entry");
-//                        return new CodeAnalysis(sessionId, repoUrl, "in-progress");
-//                    });
-//
-//            analysis.setStatus("completed");
-//            populateAnalysisFields(analysis, analysisData);
-//
-//            return saveAnalysis(analysis);
-//
-//        } catch (Exception e) {
-//            logger.error("Error creating/updating analysis for repoUrl={}", repoUrl, e);
-//            throw new RuntimeException("Failed to create or update analysis: " + e.getMessage(), e);
-//        }
-//    }
-
-    /**
      * Populates CodeAnalysis fields safely from a generic data map.
      */
     private void populateAnalysisFields(CodeAnalysis analysis, Map<String, Object> data) {
@@ -570,6 +545,9 @@ public class AnalysisService {
         }
     }
 
+    /**
+     * Generates answer for queries related to commit or any other
+     */
     public String generateAnswer(Long analysisId, String question) {
         logger.info("Generating AI-based answer for analysisId={} and question='{}'", analysisId, question);
 
@@ -593,6 +571,9 @@ public class AnalysisService {
         }
     }
 
+    /**
+     * Generates commit summary
+     */
     public String generateSummary(Long analysisId) {
         logger.info("Generating commit summary for analysisId={}", analysisId);
 
