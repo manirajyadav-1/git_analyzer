@@ -21,6 +21,11 @@ A powerful Git repository analysis tool that leverages AI to provide insights in
 - **Dependency Graph**: Map project dependencies
 - **File Change Frequency**: Track most modified files
 
+
+### Demo Video
+![Demo Video](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/demo.mp4)
+
+
 ## Technology Stack
 
 ### Frontend
