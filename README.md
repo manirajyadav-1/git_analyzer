@@ -22,7 +22,8 @@ A powerful Git repository analysis tool that leverages AI to provide insights in
 - **File Change Frequency**: Track most modified files
 
 
-### Demo Output
+## Demo Output
+
 ![Img1](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/HomePage.png)
 ![Img2](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/CodeEvolution.png)
 ![Img3](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/AskQuestion.png)
@@ -40,10 +41,8 @@ A powerful Git repository analysis tool that leverages AI to provide insights in
 
 ### Frontend
 - React
-- Chart.js
 - Cytoscape.js
 - Tailwind CSS
-- Vite
 
 ### Backend  
 - Spring Boot
@@ -64,14 +63,12 @@ A powerful Git repository analysis tool that leverages AI to provide insights in
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/git-analyzer.git
-cd git-analyzer/backend
+git clone https://github.com/manirajyadav-1/git_analyzer.git
+cd git_analyzer/backend
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your settings
 
 # Build and run with Maven
+# Before running the application, configure the settings in application.properties as shown below.
 ./mvnw clean install
 ./mvnw spring-boot:run
 ```
