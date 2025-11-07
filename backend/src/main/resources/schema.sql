@@ -1,6 +1,3 @@
--- Database initialization script for Code Archeologist Spring Boot
--- This script ensures the required PostgreSQL extensions are installed
-
 -- Create extensions for vector operations
 CREATE EXTENSION IF NOT EXISTS vector;
 
