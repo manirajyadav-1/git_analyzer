@@ -22,8 +22,18 @@ A powerful Git repository analysis tool that leverages AI to provide insights in
 - **File Change Frequency**: Track most modified files
 
 
-### Demo Video
-![Demo Video](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/demo.mp4)
+### Demo Output
+![Img1](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/HomePage.png)
+![Img2](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/CodeEvolution.png)
+![Img3](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/AskQuestion.png)
+![Img4](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/RepoSummary.png)
+![Img5](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/FileChangeFrequency.png)
+![Img6](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/CommitActivityTimeline.png)
+![Img7](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/Contributors.png)
+![Img8](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/HeatMap.png)
+![Img9](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/DependencyGraph.png)
+![Img10](https://github.com/manirajyadav-1/git_analyzer/blob/main/output/Issues.png)
+
 
 
 ## Technology Stack
