@@ -97,6 +97,85 @@ public class AnalysisController {
         }
     }
 
+    @PostMapping("/process-commits")
+    public ResponseEntity<Map<String, Object>> processCommits(@RequestBody Map<String, Object> request) {
+        Long analysisId = Long.valueOf(request.get("analysisId").toString());
+        Integer commitCount = Integer.valueOf(request.get("commitCount").toString());
+
+        try {
+            Optional<CodeAnalysis> analysisOpt = analysisService.getAnalysisById(analysisId);
+            if (analysisOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "status", "error",
+                        "message", "Analysis not found"
+                ));
+            }
+
+            CodeAnalysis analysis = analysisOpt.get();
+            Map<String, String> repoInfo = gitHubService.extractRepoInfo(analysis.getRepoUrl());
+            String owner = repoInfo.get("owner");
+            String repo = repoInfo.get("repo");
+
+            List<Map<String, Object>> commits = gitHubService.fetchCommits(owner, repo, commitCount);
+
+
+            List<Map<String, Object>> processedCommits = commits.stream()
+                    .map(commit -> {
+                        Map<String, Object> processedCommit = new HashMap<>();
+                        processedCommit.put("sha", commit.get("sha"));
+                        processedCommit.put("message", commit.get("message"));
+
+                        // Extract author information
+                        if (commit.containsKey("author")) {
+                            Map<String, Object> author = (Map<String, Object>) commit.get("author");
+                            processedCommit.put("author", Map.of(
+                                    "name", author.get("name"),
+                                    "email", author.get("email"),
+                                    "date", author.get("date")
+                            ));
+                        }
+
+                        return processedCommit;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Update commits as JSON
+            Map<String, Object> commitsData = Map.of(
+                    "totalCommits", commitCount,
+                    "commits", processedCommits
+            );
+            analysis.setCommits(objectMapper.writeValueAsString(commitsData));
+            analysis.setStatus("completed");
+
+            analysisService.saveAnalysis(analysis);
+
+            // Process embeddings in background
+            try {
+                // Use a separate thread to process embeddings
+                new Thread(() -> {
+                    try {
+                        analysisService.processCommitEmbeddings(analysisId, commits);
+                    } catch (Exception e) {
+                        logger.warn("Background embedding processing failed: {}", e.getMessage());
+                    }
+                }).start();
+            } catch (Exception e) {
+                logger.warn("Failed to start background embedding processing: {}", e.getMessage());
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Commits processed successfully",
+                    "processedCommits", processedCommits.size()
+            ));
+
+        } catch (Exception e) {
+            logger.error("Error processing commits:", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/analysis-data")
     public ResponseEntity<Map<String, Object>> getAnalysisData(@RequestParam Long analysisId) {
         try {
@@ -110,7 +189,7 @@ public class AnalysisController {
 
             CodeAnalysis analysis = analysisOpt.get();
 
-            // Deserialize JSON strings safely
+            // Deserialize JSON strings
             Map<String, Object> commits = parseJson(analysis.getCommits());
             Map<String, Object> fileChanges = parseJson(analysis.getFileChanges());
             Object commitActivity = parseJsonList(analysis.getCommitActivity());
@@ -148,85 +227,6 @@ public class AnalysisController {
         }
     }
 
-    @PostMapping("/process-commits")
-    public ResponseEntity<Map<String, Object>> processCommits(@RequestBody Map<String, Object> request) {
-        Long analysisId = Long.valueOf(request.get("analysisId").toString());
-        Integer commitCount = Integer.valueOf(request.get("commitCount").toString());
-
-        try {
-            Optional<CodeAnalysis> analysisOpt = analysisService.getAnalysisById(analysisId);
-            if (analysisOpt.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of(
-                        "status", "error",
-                        "message", "Analysis not found"
-                ));
-            }
-
-            CodeAnalysis analysis = analysisOpt.get();
-            Map<String, String> repoInfo = gitHubService.extractRepoInfo(analysis.getRepoUrl());
-            String owner = repoInfo.get("owner");
-            String repo = repoInfo.get("repo");
-
-            List<Map<String, Object>> commits = gitHubService.fetchCommits(owner, repo, commitCount);
-
-
-            List<Map<String, Object>> processedCommits = commits.stream()
-                    .map(commit -> {
-                        Map<String, Object> processedCommit = new HashMap<>();
-                        processedCommit.put("sha", commit.get("sha"));
-                        processedCommit.put("message", commit.get("message"));
-                        
-                        // Extract author information
-                        if (commit.containsKey("author")) {
-                            Map<String, Object> author = (Map<String, Object>) commit.get("author");
-                            processedCommit.put("author", Map.of(
-                                    "name", author.get("name"),
-                                    "email", author.get("email"),
-                                    "date", author.get("date")
-                            ));
-                        }
-                        
-                        return processedCommit;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
-
-            // Update commits as JSON
-            Map<String, Object> commitsData = Map.of(
-                    "totalCommits", commitCount,
-                    "commits", processedCommits
-            );
-            analysis.setCommits(objectMapper.writeValueAsString(commitsData));
-            analysis.setStatus("completed");
-
-            analysisService.saveAnalysis(analysis);
-            
-            // Process embeddings in background - don't block the response
-            try {
-                // Use a separate thread to process embeddings
-                new Thread(() -> {
-                    try {
-                        analysisService.processCommitEmbeddings(analysisId, commits);
-                    } catch (Exception e) {
-                        logger.warn("Background embedding processing failed: {}", e.getMessage());
-                    }
-                }).start();
-            } catch (Exception e) {
-                logger.warn("Failed to start background embedding processing: {}", e.getMessage());
-                // Don't fail the entire request if embedding processing fails
-            }
-
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Commits processed successfully",
-                    "processedCommits", processedCommits.size()
-            ));
-
-        } catch (Exception e) {
-            logger.error("Error processing commits:", e);
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("status", "error", "message", e.getMessage()));
-        }
-    }
 
     @GetMapping("/analysis/{analysisId}")
     public ResponseEntity<CodeAnalysis> getAnalysis(@PathVariable Long analysisId) {

@@ -94,6 +94,7 @@ public class GitHubService {
     
     public List<Map<String, Object>> fetchIssues(String owner, String repo) throws IOException {
         GHRepository repository = gitHub.getRepository(owner + "/" + repo);
+
         return repository.getIssues(GHIssueState.ALL).stream()
                 .map(issue -> {
                     Map<String, Object> issueData = new HashMap<>();

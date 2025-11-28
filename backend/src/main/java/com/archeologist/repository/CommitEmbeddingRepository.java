@@ -21,8 +21,7 @@ public interface CommitEmbeddingRepository extends JpaRepository<CommitEmbedding
                    "AND 1 - (embedding <=> CAST(:queryEmbedding AS vector)) > 0.5 " +
                    "ORDER BY similarity DESC " +
                    "LIMIT 5", nativeQuery = true)
-    List<Object[]> findSimilarCommits(@Param("analysisId") Long analysisId, 
-                                     @Param("queryEmbedding") String queryEmbedding);
+    List<Object[]> findSimilarCommits(@Param("analysisId") Long analysisId, @Param("queryEmbedding") String queryEmbedding);
     
     @Query("SELECT ce.commitMessage FROM CommitEmbedding ce WHERE ce.codeAnalysis.id = :analysisId ORDER BY ce.createdAt DESC")
     List<String> findCommitMessagesByAnalysisId(@Param("analysisId") Long analysisId);

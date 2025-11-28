@@ -498,7 +498,7 @@ public class AnalysisService {
                     continue;
                 }
 
-                // ✅ Each call runs in its own transaction
+                //  Each call runs in its own transaction
                 commitEmbeddingService.saveCommitEmbeddingWithRetry(analysis, commitHash, commitMessage, embedding);
                 processedCount++;
 
