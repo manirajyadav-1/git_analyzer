@@ -1,6 +1,5 @@
 package com.archeologist.service;
 
-import com.archeologist.entity.CodeAnalysis;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kohsuke.github.*;
@@ -124,7 +123,7 @@ public class GitHubService {
 
             String content = new String(packageJson.read().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
 
-            logger.debug("Fetched package.json for {}/{}: {}", owner, repo, content);
+            logger.debug("Fetched package.json for {}/{}", owner, repo);
 
             // Parse JSON properly
             JsonNode root = objectMapper.readTree(content);

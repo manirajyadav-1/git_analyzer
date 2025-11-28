@@ -13,9 +13,6 @@ public class CodeAnalysis {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "session_id", nullable = false)
-    private String sessionId;
-
     @Column(name = "repo_url", nullable = false)
     private String repoUrl;
 
@@ -52,8 +49,7 @@ public class CodeAnalysis {
     public CodeAnalysis() {
     }
 
-    public CodeAnalysis(String sessionId, String repoUrl, String status, LocalDateTime createdAt, String commits, String fileChanges, String contributors, String commitActivity, String dependencies, String issues) {
-        this.sessionId = sessionId;
+    public CodeAnalysis(String repoUrl, String status, LocalDateTime createdAt, String commits, String fileChanges, String contributors, String commitActivity, String dependencies, String issues) {
         this.repoUrl = repoUrl;
         this.status = status;
         this.createdAt = createdAt;
@@ -65,8 +61,7 @@ public class CodeAnalysis {
         this.issues = issues;
     }
 
-    public CodeAnalysis(String sessionId, String repoUrl, String status) {
-        this.sessionId = sessionId;
+    public CodeAnalysis(String repoUrl, String status) {
         this.repoUrl = repoUrl;
         this.status = status;
     }
@@ -78,14 +73,6 @@ public class CodeAnalysis {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getRepoUrl() {

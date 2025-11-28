@@ -29,21 +29,6 @@ public class DataController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Long getAnalysisIdFromSession(HttpSession session) {
-        Long analysisId = (Long) session.getAttribute("analysisId");
-        if (analysisId == null) {
-            logger.warn("No analysisId found in session {}", session.getId());
-            return null;
-        }
-        return analysisId;
-    }
-
-    private Long resolveAnalysisId(HttpSession session, Long analysisIdParam) {
-        if (analysisIdParam != null) {
-            return analysisIdParam;
-        }
-        return getAnalysisIdFromSession(session);
-    }
 
     private ResponseEntity<Map<String, Object>> successWithData(Object data) {
         Map<String, Object> response = new HashMap<>();
@@ -61,11 +46,11 @@ public class DataController {
     }
 
     @GetMapping("/file-change-frequency")
-    public ResponseEntity<Map<String, Object>> getFileChangeFrequency(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
+    public ResponseEntity<Map<String, Object>> getFileChangeFrequency(@RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching file change frequency for session {}", session.getId());
+        logger.info("Fetching file change frequency for analysisId {}", analysisIdParam);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
+            Long analysisId = analysisIdParam;
             if (analysisId == null) {
                 // return empty list so frontend shows empty chart instead of error message
                 return successWithData(Collections.emptyList());
@@ -85,11 +70,11 @@ public class DataController {
     }
 
     @GetMapping("/commit-activity-timeline")
-    public ResponseEntity<Map<String, Object>> getCommitActivityTimeline(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
+    public ResponseEntity<Map<String, Object>> getCommitActivityTimeline( @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching commit activity timeline for session {}", session.getId());
+        logger.info("Fetching commit activity timeline for analysisId {}", analysisIdParam);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
+            Long analysisId = analysisIdParam;
             if (analysisId == null) {
                 return successWithData(Collections.emptyList());
             }
@@ -107,11 +92,11 @@ public class DataController {
     }
 
     @GetMapping("/contributor-statistics")
-    public ResponseEntity<Map<String, Object>> getContributorStatistics(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
+    public ResponseEntity<Map<String, Object>> getContributorStatistics(@RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching contributor statistics for session {}", session.getId());
+        logger.info("Fetching contributor statistics for analysisId {}", analysisIdParam);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
+            Long analysisId = analysisIdParam;
             if (analysisId == null) {
                 return successWithData(Collections.emptyList());
             }
@@ -129,11 +114,11 @@ public class DataController {
     }
 
     @GetMapping("/codebase-heatmap")
-    public ResponseEntity<Map<String, Object>> getCodebaseHeatmap(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
+    public ResponseEntity<Map<String, Object>> getCodebaseHeatmap(@RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching codebase heatmap for session {}", session.getId());
+        logger.info("Fetching codebase heatmap for analysisId {}", analysisIdParam);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
+            Long analysisId = analysisIdParam;
             if (analysisId == null) {
                 return successWithData(Collections.emptyMap());
             }
@@ -151,13 +136,13 @@ public class DataController {
     }
 
     @GetMapping("/dependency-graph")
-    public ResponseEntity<Map<String, Object>> getDependencyGraph(HttpSession session, @RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
+    public ResponseEntity<Map<String, Object>> getDependencyGraph(@RequestParam(name = "analysisId", required = false) Long analysisIdParam) {
 
-        logger.info("Fetching dependency graph for session {}", session.getId());
+        logger.info("Fetching dependency graph for analysisId {}", analysisIdParam);
         try {
-            Long analysisId = resolveAnalysisId(session, analysisIdParam);
+            Long analysisId = analysisIdParam;
             if (analysisId == null) {
-                logger.warn("No analysisId found for session {}", session.getId());
+                logger.warn("No analysisId found");
                 return successWithData(Collections.emptyMap());
             }
 

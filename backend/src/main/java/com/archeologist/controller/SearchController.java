@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +20,7 @@ public class SearchController {
     
     @Autowired
     private AnalysisService analysisService;
-    
-    private Long getAnalysisIdFromSession(HttpSession session) {
-        Long analysisId = (Long) session.getAttribute("analysisId");
-        if (analysisId == null) {
-            throw new RuntimeException("No analysis found for session");
-        }
-        return analysisId;
-    }
+
     
     @GetMapping("/search-commits")
     public ResponseEntity<Map<String, Object>> searchCommits(@RequestParam String query, @RequestParam(name = "analysisId") Long analysisId) {

@@ -31,11 +31,11 @@ public class AnalysisController {
     private ObjectMapper objectMapper;
 
     @PostMapping("/analyze")
-    public ResponseEntity<Map<String, Object>> analyzeRepository(@RequestBody Map<String, String> request, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> analyzeRepository(@RequestBody Map<String, String> request) {
         String repoUrl = request.get("repoUrl");
-        String sessionId = session.getId();
+//        String sessionId = session.getId();
 
-        logger.info("Received /api/analyze request with repoUrl: {} and sessionId: {}", repoUrl, sessionId);
+        logger.info("Received /api/analyze request with repoUrl: {} ", repoUrl);
 
         if (repoUrl == null || repoUrl.trim().isEmpty()) {
             return ResponseEntity.badRequest()
@@ -56,7 +56,7 @@ public class AnalysisController {
 
             // Convert data to JSON strings for storage
             CodeAnalysis analysis = new CodeAnalysis();
-            analysis.setSessionId(sessionId);
+//            analysis.setSessionId(sessionId);
             analysis.setRepoUrl(repoUrl);
             analysis.setStatus("COMPLETED");
             analysis.setCommits(objectMapper.writeValueAsString(Map.of("totalCommits", totalCommits)));
@@ -68,7 +68,7 @@ public class AnalysisController {
 
             CodeAnalysis saved = analysisService.saveAnalysis(analysis);
 
-            session.setAttribute("analysisId", saved.getId());
+//            session.setAttribute("analysisId", saved.getId());
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
@@ -235,32 +235,32 @@ public class AnalysisController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/session")
-    public ResponseEntity<Map<String, Object>> getSession(HttpSession session) {
-        String sessionId = session.getId();
-        Long analysisId = (Long) session.getAttribute("analysisId");
-
-        try {
-            if (analysisId != null) {
-                // Verify analysis exists
-                Optional<CodeAnalysis> analysisOpt = analysisService.getAnalysisById(analysisId);
-                if (analysisOpt.isPresent()) {
-                    return ResponseEntity.ok(Map.of(
-                            "sessionId", sessionId,
-                            "analysisId", analysisOpt.get().getId()
-                    ));
-                }
-            }
-
-            return ResponseEntity.ok(Map.of(
-                    "sessionId", sessionId,
-                    "analysisId", null
-            ));
-        } catch (Exception e) {
-            logger.error("Session error:", e);
-            return ResponseEntity.status(500).body(Map.of("error", "Session error"));
-        }
-    }
+//    @GetMapping("/session")
+//    public ResponseEntity<Map<String, Object>> getSession(HttpSession session) {
+//        String sessionId = session.getId();
+//        Long analysisId = (Long) session.getAttribute("analysisId");
+//
+//        try {
+//            if (analysisId != null) {
+//                // Verify analysis exists
+//                Optional<CodeAnalysis> analysisOpt = analysisService.getAnalysisById(analysisId);
+//                if (analysisOpt.isPresent()) {
+//                    return ResponseEntity.ok(Map.of(
+//                            "sessionId", sessionId,
+//                            "analysisId", analysisOpt.get().getId()
+//                    ));
+//                }
+//            }
+//
+//            return ResponseEntity.ok(Map.of(
+//                    "sessionId", sessionId,
+//                    "analysisId", null
+//            ));
+//        } catch (Exception e) {
+//            logger.error("Session error:", e);
+//            return ResponseEntity.status(500).body(Map.of("error", "Session error"));
+//        }
+//    }
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
